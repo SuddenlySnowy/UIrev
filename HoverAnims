@@ -1,0 +1,40 @@
+local TweenService = game:GetService("TweenService")
+
+local twi1 = TweenInfo.new(0.15,Enum.EasingStyle.Sine,Enum.EasingDirection.Out)
+local twi2 = TweenInfo.new(0.225,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+local twi3 = TweenInfo.new(0.15,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+local mult1 = 1.125
+local mult2 = 0.85
+for i,btn:GuiObject in script.Parent:GetDescendants() do
+	if not btn:IsA("GuiObject") then continue end
+	if btn:IsA("GuiButton") then
+		if btn:GetAttribute("DisableAnim") then continue end
+		if not btn:GetAttribute("OrigSize") then
+			btn:SetAttribute("OrigSize",btn.Size)
+		end
+		btn.MouseEnter:Connect(function()
+			TweenService:Create(btn,twi1,{Size = UDim2.fromScale(btn:GetAttribute("OrigSize").X.Scale*mult1,btn:GetAttribute("OrigSize").Y.Scale*mult1)}):Play()
+		end)
+		btn.MouseLeave:Connect(function()
+			TweenService:Create(btn,twi2,{Size = btn:GetAttribute("OrigSize")}):Play()
+		end)
+		btn.MouseButton1Down:Connect(function()
+			TweenService:Create(btn,twi3,{Size = UDim2.fromScale(btn:GetAttribute("OrigSize").X.Scale*mult2,btn:GetAttribute("OrigSize").Y.Scale*mult2)}):Play()
+		end)
+		btn.MouseButton1Up:Connect(function()
+			TweenService:Create(btn,twi1,{Size = UDim2.fromScale(btn:GetAttribute("OrigSize").X.Scale*mult1,btn:GetAttribute("OrigSize").Y.Scale*mult1)}):Play()
+		end)
+	else
+		if not btn:GetAttribute("OrigSize") then
+			btn:SetAttribute("OrigSize",btn.Size)
+		end
+		if btn:GetAttribute("Animate") then
+			btn.MouseEnter:Connect(function()
+				TweenService:Create(btn,twi1,{Size = UDim2.fromScale(btn:GetAttribute("OrigSize").X.Scale*mult1,btn:GetAttribute("OrigSize").Y.Scale*mult1)}):Play()
+			end)
+			btn.MouseLeave:Connect(function()
+				TweenService:Create(btn,twi2,{Size = btn:GetAttribute("OrigSize")}):Play()
+			end)
+		end
+	end
+end
