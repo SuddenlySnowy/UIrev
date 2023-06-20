@@ -1,0 +1,164 @@
+local TweenService = game:GetService("TweenService")
+
+local frameTranspFunc = require(script.FrameTransparency)
+local pageLayout = script.Parent.UIPageLayout
+local list = script.Parent
+local midFrame = script.Parent.Parent.Parent.MiddleFrame
+local botFrame = script.Parent.Parent.Parent.BotFrame
+local menuList = {
+	[1] = {Label = "Extras",Img = "13758454130"},
+	[2] = {Label = "Skins",Img = "13729736254"},
+	[3] = {Label = "Challenges",Img = "13729738133"},
+	[4] = {Label = "Contracts",Img = "13729739353"},
+	[5] = {Label = "Play",Img = "13720994048"},
+	[6] = {Label = "Loadout",Img = "13729740183"},
+	[7] = {Label = "Season",Img = "13729740885"},
+}
+
+function openMidFrame(frameName :string)
+	local frame :GuiObject = midFrame:FindFirstChild(frameName)
+	if frame.Visible then
+		TweenService:Create(frame,TweenInfo.new(0.15,Enum.EasingStyle.Sine,Enum.EasingDirection.Out),{Position = UDim2.fromScale(0.5,1.5)}):Play()
+		
+		TweenService:Create(list[frameName].Main.Background.UIStroke,TweenInfo.new(0.15),{Color = Color3.fromRGB(0, 0, 0),Transparency = 0.5}):Play()
+		TweenService:Create(list[frameName].Main.Shadow,TweenInfo.new(0.15),{ImageColor3 = Color3.fromRGB(0, 0, 0)}):Play()
+		TweenService:Create(game.Lighting.Blur,TweenInfo.new(0.5),{Size = 0}):Play()
+		TweenService:Create(botFrame,TweenInfo.new(0.5,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),{Position = UDim2.fromScale(0.01,0.975)}):Play()
+		delay(0.15,function()
+			frame.Visible = not frame.Visible
+		end)
+	else
+		frame.Position = UDim2.fromScale(0.5,-1.5)
+		frame.Visible = not frame.Visible
+		for i,v in midFrame:GetChildren() do 
+			if not v:IsA("GuiObject") or v.Name == frameName then continue end
+			TweenService:Create(v,TweenInfo.new(0.15,Enum.EasingStyle.Sine,Enum.EasingDirection.In),{Position = UDim2.fromScale(0.5,1.5)}):Play()
+			delay(0.15,function()
+				v.Visible = false
+			end)
+		end
+		TweenService:Create(frame,TweenInfo.new(0.35,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Position = UDim2.fromScale(0.5,0.5)}):Play()
+		
+		
+		for i,v in list:GetChildren() do
+			if not v:IsA("GuiObject") then continue end
+			TweenService:Create(v.Main.Shadow,TweenInfo.new(0.15),{ImageColor3 = Color3.fromRGB(0, 0, 0)}):Play()
+			TweenService:Create(v.Main.Background.UIStroke,TweenInfo.new(0.15),{Color = Color3.fromRGB(0, 0, 0)}):Play()
+			if v.Main.Background.UIStroke.Transparency == 0 then
+				TweenService:Create(v.Main.Background.UIStroke,TweenInfo.new(0.15),{Transparency = 0.5}):Play()
+			end
+		end
+		TweenService:Create(list[frameName].Main.Background.UIStroke,TweenInfo.new(0.15),{Color = Color3.fromRGB(255,255,255),Transparency = 0}):Play()
+		TweenService:Create(list[frameName].Main.Shadow,TweenInfo.new(0.15),{ImageColor3 = Color3.fromRGB(255,255,255)}):Play()
+		
+		TweenService:Create(game.Lighting.Blur,TweenInfo.new(0.5),{Size = 35}):Play()
+		TweenService:Create(botFrame,TweenInfo.new(0.3,Enum.EasingStyle.Sine,Enum.EasingDirection.In),{Position = UDim2.fromScale(-0.25,1.25)}):Play()
+	end
+end
+
+for i,v in menuList do 
+	local template = script.Template:Clone()
+	local main = template.Main
+	template.Name = v.Label
+	template.LayoutOrder = i
+	template.ZIndex = i
+	main.ImgIcon.Image = "rbxassetid://" .. v.Img
+	main.label.Text = v.Label
+	template.Parent = list
+	main.MouseButton1Click:Connect(function()
+		if pageLayout.CurrentPage == template then
+			openMidFrame(pageLayout.CurrentPage.Name)
+		else
+			pageLayout:JumpTo(template)
+		end
+	
+	end)
+end
+pageLayout:JumpToIndex(3)
+
+function updatePages()
+	local curpage = pageLayout.CurrentPage
+	
+	local nearbyPages = {}
+	local secondNearPages = {}
+	for i,v in list:GetChildren() do 
+		if not v:IsA("GuiObject") or v == curpage then continue end
+		if menuList[curpage.LayoutOrder + 1] and v.LayoutOrder == curpage.LayoutOrder + 1 then
+			table.insert(nearbyPages,v)
+		elseif menuList[curpage.LayoutOrder - 1] and v.LayoutOrder == curpage.LayoutOrder - 1 then
+			table.insert(nearbyPages,v)
+		end
+		if menuList[curpage.LayoutOrder + 2] and v.LayoutOrder == curpage.LayoutOrder + 2 then
+			table.insert(secondNearPages,v)
+			
+		elseif menuList[curpage.LayoutOrder - 2] and v.LayoutOrder == curpage.LayoutOrder - 2 then
+			table.insert(secondNearPages,v)
+			
+		end
+	end
+	
+	for i,v in list:GetChildren() do 
+		if not v:IsA("GuiObject") or v == curpage then continue end
+		TweenService:Create(v.Main.label,TweenInfo.new(0.15),{TextTransparency = 1}):Play()
+		TweenService:Create(v.Main.label.UIStroke,TweenInfo.new(0.15),{Transparency = 1}):Play()
+		v.ZIndex = v.LayoutOrder
+
+	end
+	
+	for i,v in list:GetChildren() do 
+		if not v:IsA("GuiObject") or v == curpage or table.find(nearbyPages,v) or table.find(secondNearPages,v) then continue end
+		TweenService:Create(v.Main,TweenInfo.new(0.15),{Rotation = 0}):Play()
+		frameTranspFunc.Call(v,1)
+	end
+	for i,v in nearbyPages do 
+		TweenService:Create(v.Main,TweenInfo.new(0.15),{Rotation = 0}):Play()
+		TweenService:Create(v,TweenInfo.new(0.15),{Size = UDim2.fromScale(0.9,0.9)}):Play()
+		frameTranspFunc.Call(v,0.55)
+	end
+	for i,v in secondNearPages do 
+		TweenService:Create(v.Main,TweenInfo.new(0.15),{Rotation = 0}):Play()
+		TweenService:Create(v,TweenInfo.new(0.15),{Size = UDim2.fromScale(0.75,0.75)}):Play()
+		frameTranspFunc.Call(v,0.75)
+	end
+	
+	TweenService:Create(curpage.Main.label,TweenInfo.new(0.15),{TextTransparency = 0}):Play()
+	TweenService:Create(curpage.Main.label.UIStroke,TweenInfo.new(0.15),{Transparency = 0}):Play()
+	TweenService:Create(curpage,TweenInfo.new(0.15),{Size = UDim2.fromScale(1,1)}):Play()
+	TweenService:Create(curpage.Main,TweenInfo.new(0.15),{Rotation = 5}):Play()
+
+	curpage.ZIndex += 3
+	frameTranspFunc.Call(curpage,0)
+	--arrows limit visibility
+	if not menuList[curpage.LayoutOrder + 1] then
+		TweenService:Create(list.Parent.Arrows[1],TweenInfo.new(0.15),{ImageTransparency = 1}):Play()
+	else
+		TweenService:Create(list.Parent.Arrows[1],TweenInfo.new(0.15),{ImageTransparency = 0}):Play()
+	end
+	if not menuList[curpage.LayoutOrder - 1] then
+		TweenService:Create(list.Parent.Arrows[2],TweenInfo.new(0.15),{ImageTransparency = 1}):Play()
+	else
+		TweenService:Create(list.Parent.Arrows[2],TweenInfo.new(0.15),{ImageTransparency = 0}):Play()
+	end
+end
+
+updatePages()
+
+for i,v in list.Parent.Arrows:GetChildren() do 
+	if not v:IsA("GuiObject") then continue end 
+	v.MouseButton1Click:Connect(function()
+		if v.Name == "1" then
+			pageLayout:Next()
+		else pageLayout:Previous()
+		end
+	end)
+end
+
+for i,v:GuiButton in midFrame:GetDescendants() do 
+	if not v:IsA("GuiObject") or v.Name ~= "CloseBtn" then continue end
+	v.MouseButton1Click:Connect(function()
+		openMidFrame(v.Parent.Name)
+	end)
+end
+
+pageLayout:GetPropertyChangedSignal("CurrentPage"):Connect(updatePages)
+
